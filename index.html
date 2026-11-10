@@ -254,7 +254,7 @@ h2 {
 
   <section class="photo" aria-labelledby="h-photo">
     <h2 id="h-photo" class="visually-hidden">Foto</h2>
-    <input id="photo" class="visually-hidden" type="file" name="encoded_image" form="lensForm" accept="image/*">
+    <input id="photo" class="visually-hidden" type="file" accept="image/*">
     <label for="photo" class="dropzone" id="dropzone">
       <img id="preview" alt="Foto elegida" hidden>
       <span class="dz-empty" id="dzEmpty">
@@ -272,28 +272,31 @@ h2 {
   <section class="engines" aria-labelledby="h-engines">
     <h2 id="h-engines">Buscar en</h2>
 
-    <form id="lensForm" action="https://lens.google.com/v3/upload?hl=es" method="post" enctype="multipart/form-data" target="_blank">
-      <button type="submit" class="engine primary" id="lensBtn" disabled>
-        <span class="engine-name">Google Lens <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h8v8M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="route direct">Directo</span>
-        <span class="engine-what">Exactas y parecidas. Para copias de la misma imagen, toca «Coincidencias exactas».</span>
-      </button>
-    </form>
-
     <form id="bingForm" action="https://www.bing.com/images/detail/search?iss=sbiupload&amp;FORM=ANCMS1#enterInsights" method="post" enctype="multipart/form-data" target="_blank">
       <input type="hidden" name="imageBin" id="imageBin">
-      <button type="submit" class="engine" id="bingBtn" disabled>
+      <button type="submit" class="engine primary" id="bingBtn" disabled>
         <span class="engine-name">Bing <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h8v8M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span class="route direct">Directo</span>
-        <span class="engine-what">Identifica objetos y productos, y lista páginas que incluyen la imagen.</span>
+        <span class="engine-what">Exactas y parecidas en un solo paso. Pestañas «Coincidencias visuales» y «Páginas con esta imagen».</span>
       </button>
     </form>
 
+    <button type="button" class="engine" id="shareBtn" hidden disabled>
+      <span class="engine-name">Google Lens en la app de Google</span>
+      <span class="route direct">Directo</span>
+      <span class="engine-what">Abre el menú Compartir: elige «Google» y la app buscará la foto con Lens. Necesitas la app de Google instalada.</span>
+    </button>
+
     <div class="temp-box" id="tempBox">
-      <p><strong>TinEye y Yandex</strong> solo buscan imágenes que tengan dirección web. La app sube una copia reducida a un alojamiento temporal que la borra sola.</p>
+      <p><strong>Google Lens, TinEye y Yandex</strong> no aceptan fotos enviadas desde otras webs; solo buscan imágenes con dirección web. La app sube una copia reducida a un alojamiento temporal que la borra sola.</p>
       <button type="button" class="btn" id="tempBtn" disabled>Subir copia temporal</button>
       <div class="temp-status" id="tempStatus" aria-live="polite"></div>
       <div class="temp-links" id="tempLinks" hidden>
+        <a class="engine" id="lensLink" target="_blank" rel="noopener noreferrer">
+          <span class="engine-name">Google Lens <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h8v8M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="route temp">Copia temporal</span>
+          <span class="engine-what">El índice más grande. Para copias de la misma imagen, toca «Coincidencias exactas».</span>
+        </a>
         <a class="engine" id="tineyeLink" target="_blank" rel="noopener noreferrer">
           <span class="engine-name">TinEye <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h8v8M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span class="route temp">Copia temporal</span>
@@ -324,7 +327,7 @@ h2 {
     </div>
   </section>
 
-  <p class="fine" id="privacy">La app no guarda tus fotos. Google y Bing reciben la foto directamente al tocar su botón. Para TinEye y Yandex se sube una copia reducida (máx. 1200 px) a <span id="hostName">un alojamiento temporal</span>; mientras exista, cualquiera con el enlace podría verla, así que no la uses con imágenes confidenciales.</p>
+  <p class="fine" id="privacy">La app no guarda tus fotos. Bing recibe la foto directamente al tocar su botón, y con «app de Google» la foto pasa del iPhone a esa app. Para Lens, TinEye y Yandex desde la web se sube una copia reducida (máx. 1200 px) a <span id="hostName">un alojamiento temporal</span>; mientras exista, cualquiera con el enlace podría verla, así que no la uses con imágenes confidenciales.</p>
 
 </main>
 
@@ -335,9 +338,11 @@ h2 {
   var $ = function (id) { return document.getElementById(id); };
   var photo = $("photo"), preview = $("preview"), dzEmpty = $("dzEmpty"), dropzone = $("dropzone");
   var photoMeta = $("photoMeta"), photoInfo = $("photoInfo");
-  var lensBtn = $("lensBtn"), bingBtn = $("bingBtn"), imageBin = $("imageBin");
+  var bingBtn = $("bingBtn"), imageBin = $("imageBin"), shareBtn = $("shareBtn");
   var tempBtn = $("tempBtn"), tempStatus = $("tempStatus"), tempLinks = $("tempLinks");
-  var tineyeLink = $("tineyeLink"), yandexLink = $("yandexLink");
+  var lensLink = $("lensLink"), tineyeLink = $("tineyeLink"), yandexLink = $("yandexLink");
+  var canShareFiles = typeof navigator.share === "function" && typeof navigator.canShare === "function";
+  shareBtn.hidden = !canShareFiles;
 
   var E = encodeURIComponent;
   var BY_URL = {
@@ -394,7 +399,7 @@ h2 {
     }
   ];
 
-  var state = { small: null, tempUrl: null, uploading: false };
+  var state = { file: null, small: null, tempUrl: null, uploading: false };
 
   function fmtSize(b) {
     return b >= 1048576 ? (b / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(b / 1024)) + " KB";
@@ -451,8 +456,14 @@ h2 {
   function handleFile(file) {
     if (!file) return;
     resetTemp();
+    state.file = file;
     state.small = null;
-    lensBtn.disabled = false;     // Lens puede recibir el archivo original aunque no podamos procesarlo
+    if (canShareFiles) {
+      var ok = false;
+      try { ok = navigator.canShare({ files: [file] }); } catch (e) { ok = false; }
+      shareBtn.hidden = !ok;
+      shareBtn.disabled = !ok;
+    }
     bingBtn.disabled = true;
     tempBtn.disabled = true;
     imageBin.value = "";
@@ -466,19 +477,8 @@ h2 {
       var img = res.img;
       photoInfo.textContent = img.naturalWidth + " × " + img.naturalHeight + " px · " + fmtSize(file.size);
 
-      // Copia para Lens: JPEG de hasta 2000 px (sube más rápido con datos móviles).
-      var lensJob = toJpeg(img, 2000, 0.9).then(function (big) {
-        if (big.size < file.size || !/jpe?g/i.test(file.type)) {
-          try {
-            var dt = new DataTransfer();
-            dt.items.add(new File([big], "foto.jpg", { type: "image/jpeg" }));
-            photo.files = dt.files;
-          } catch (e) { /* el navegador no permite sustituir el archivo: Lens recibe el original */ }
-        }
-      });
-
-      // Copia pequeña para Bing y para el alojamiento temporal.
-      var smallJob = toJpeg(img, 1200, 0.85).then(function (small) {
+      // Copia reducida para Bing y para el alojamiento temporal.
+      return toJpeg(img, 1200, 0.85).then(function (small) {
         state.small = small;
         tempBtn.disabled = false;
         return blobToBase64(small).then(function (b64) {
@@ -486,16 +486,19 @@ h2 {
           bingBtn.disabled = false;
         });
       });
-
-      return Promise.all([lensJob, smallJob]);
     }).catch(function () {
       preview.removeAttribute("src");
       setPhotoUI(true);
       preview.hidden = true;
       dzEmpty.hidden = false;
-      photoInfo.textContent = "Este navegador no puede mostrar ese formato. Google Lens recibirá el archivo tal cual; Bing, TinEye y Yandex no están disponibles con él.";
+      photoInfo.textContent = "Este navegador no puede leer ese formato. Prueba con un JPEG o PNG" + (canShareFiles ? ", o usa «Google Lens en la app de Google»." : ".");
     });
   }
+
+  shareBtn.addEventListener("click", function () {
+    if (!state.file) return;
+    navigator.share({ files: [state.file] }).catch(function () { /* cancelado por el usuario */ });
+  });
 
   photo.addEventListener("change", function () {
     handleFile(photo.files && photo.files[0]);
@@ -550,6 +553,7 @@ h2 {
     tempStatus.className = "temp-status";
     tryHosts(state.small, 0).then(function (res) {
       state.tempUrl = res.url;
+      lensLink.href = BY_URL.lens(res.url);
       tineyeLink.href = BY_URL.tineye(res.url);
       yandexLink.href = BY_URL.yandex(res.url);
       tempLinks.hidden = false;
